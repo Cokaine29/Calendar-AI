@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { Groq } from 'groq-sdk';
+import { getToken } from 'next-auth/jwt';
 
 export const maxDuration = 60; // Allow function to run for up to 60 seconds
 
 export async function POST(request: Request) {
     try {
+        const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
+        if (!token) {
+             return NextResponse.json({ error: 'Unauthorized. Please sign in.' }, { status: 401 });
+        }
+
         if (!process.env.GROQ_API_KEY) {
             return NextResponse.json({ error: 'GROQ_API_KEY is missing from Vercel Environment Variables.' }, { status: 500 });
         }
@@ -14,19 +20,20 @@ export async function POST(request: Request) {
         });
 
         const body = await request.json();
-        const { email_text } = body;
+        const { email_text, timezone } = body;
 
         if (!email_text) {
             return NextResponse.json({ error: 'Email text is required' }, { status: 400 });
         }
 
         const currentTime = new Date().toISOString();
+        const userTz = timezone || 'UTC';
         const prompt = `
         You are an intelligent assistant. I will provide you with the text of an email about an event (like a meeting, workshop, or seminar).
         Your task is to extract the event details. 
         
-        The current date and time is: ${currentTime}. 
-        Use this to resolve any relative dates (e.g. "tomorrow", "next Friday").
+        The current date and time is: ${currentTime}. The user's timezone is: ${userTz}.
+        Use this to accurately resolve any relative dates (e.g. "tomorrow", "next Friday").
         
         Please provide the output as a SINGLE JSON object containing a key called "events". The value of "events" should be a list of event objects. If there are multiple events or sessions mentioned (e.g., Lecture 1, Lecture 2), extract ALL of them as separate objects in the list.
         

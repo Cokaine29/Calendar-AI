@@ -20,16 +20,22 @@ export async function GET(request: Request) {
 
         const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
         
-        // Fetch events from now to 7 days from now
+        const { searchParams } = new URL(request.url);
+        const reqTimeMin = searchParams.get('timeMin');
+        const reqTimeMax = searchParams.get('timeMax');
+
         const now = new Date();
         const nextWeek = new Date();
         nextWeek.setDate(now.getDate() + 7);
 
+        const timeMin = reqTimeMin || now.toISOString();
+        const timeMax = reqTimeMax || nextWeek.toISOString();
+
         const res = await calendar.events.list({
             calendarId: 'primary',
-            timeMin: now.toISOString(),
-            timeMax: nextWeek.toISOString(),
-            maxResults: 50,
+            timeMin: timeMin,
+            timeMax: timeMax,
+            maxResults: 250,
             singleEvents: true,
             orderBy: 'startTime',
         });

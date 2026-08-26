@@ -42,11 +42,27 @@ export default function Home() {
   // New Calendar State
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [loadingCalendar, setLoadingCalendar] = useState(false);
+  const [calendarView, setCalendarView] = useState<'week'|'day'>('week');
+  const [calendarDate, setCalendarDate] = useState(new Date());
 
-  const fetchCalendar = async () => {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCalendarView(window.innerWidth < 768 ? 'day' : 'week');
+      const handleResize = () => setCalendarView(window.innerWidth < 768 ? 'day' : 'week');
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+
+  const fetchCalendar = async (targetDate: Date = calendarDate) => {
     setLoadingCalendar(true);
     try {
-      const res = await fetch("/api/calendar", { cache: "no-store" });
+      const minDate = new Date(targetDate);
+      minDate.setDate(minDate.getDate() - 14);
+      const maxDate = new Date(targetDate);
+      maxDate.setDate(maxDate.getDate() + 14);
+
+      const res = await fetch(`/api/calendar?timeMin=${minDate.toISOString()}&timeMax=${maxDate.toISOString()}`, { cache: "no-store" });
       const data = await res.json();
       if (res.ok) {
         setUpcomingEvents(data.events || []);
@@ -117,10 +133,11 @@ export default function Home() {
     setScheduledLinks([]); 
     setMessage("");
     try {
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const res = await fetch("/api/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email_text: emailText }),
+        body: JSON.stringify({ email_text: emailText, timezone: userTimezone }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -144,6 +161,10 @@ export default function Home() {
           return { ...ev, start_time: startStr, end_time: endStr };
         });
 
+        if (extractedEvents.length === 0) {
+          setMessage("No events were found in the text. Please provide specific dates and times.");
+        }
+
         setEvents(extractedEvents);
       } else {
         setMessage(data.error);
@@ -159,6 +180,23 @@ export default function Home() {
     setScheduledLinks([]);
     setMessage("");
     try {
+      // Validate all events before sending
+      for (const ev of events) {
+        if (!ev.start_time) {
+          throw new Error(`Event "${ev.title || 'Untitled'}" is missing a start time.`);
+        }
+        const st = new Date(ev.start_time);
+        if (isNaN(st.getTime())) {
+          throw new Error(`Event "${ev.title || 'Untitled'}" has an invalid start time.`);
+        }
+        if (ev.end_time) {
+          const et = new Date(ev.end_time);
+          if (isNaN(et.getTime())) {
+            throw new Error(`Event "${ev.title || 'Untitled'}" has an invalid end time.`);
+          }
+        }
+      }
+
       const finalEvents = events.map(ev => ({
         ...ev,
         start_time: ev.start_time ? new Date(ev.start_time).toISOString() : null,
@@ -179,8 +217,8 @@ export default function Home() {
       } else {
         setMessage(data.error);
       }
-    } catch (err) {
-      setMessage("Failed to schedule events.");
+    } catch (err: any) {
+      setMessage(err.message || "Failed to schedule events.");
     }
     setLoadingSchedule(false);
   };
@@ -393,7 +431,7 @@ export default function Home() {
         </div>
 
         {/* Right Column: Weekly Calendar Grid */}
-        <div className="w-full bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/50 sticky top-12 h-[800px]">
+        <div className="w-full bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/50 xl:sticky xl:top-12 h-[600px] xl:h-[800px] order-first xl:order-last mb-12 xl:mb-0">
           <h3 className="text-xl font-semibold tracking-tight mb-6">Upcoming Schedule</h3>
           
           {loadingCalendar ? (
@@ -407,8 +445,14 @@ export default function Home() {
                 events={calendarEvents}
                 startAccessor="start"
                 endAccessor="end"
-                defaultView="week"
+                view={calendarView}
+                onView={(v) => setCalendarView(v as 'week'|'day')}
                 views={['week', 'day']}
+                date={calendarDate}
+                onNavigate={(newDate) => {
+                  setCalendarDate(newDate);
+                  fetchCalendar(newDate);
+                }}
                 min={new Date(2025, 1, 1, 7, 0, 0)} // Starts at 7 AM
                 max={new Date(2025, 1, 1, 23, 0, 0)} // Ends at 11 PM
                 scrollToTime={new Date(2025, 1, 1, 8, 0, 0)} // Auto-scrolls to 8 AM on load
