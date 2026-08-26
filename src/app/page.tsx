@@ -6,7 +6,7 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import { toast } from "sonner";
-import { RefreshCw, Download, CalendarPlus, FileText, CheckCircle2 } from "lucide-react";
+import { RefreshCw, Download, CalendarPlus, FileText, CheckCircle2, Github, Linkedin, Instagram } from "lucide-react";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const locales = {
@@ -24,10 +24,19 @@ const localizer = dateFnsLocalizer({
 const Footer = () => (
   <footer className="w-full py-12 text-center text-sm font-medium text-zinc-400">
     <p>Built by Niraj Prashant Kamble</p>
-    <div className="flex justify-center gap-6 mt-3">
-      <a href="https://github.com/Cokaine29" target="_blank" rel="noreferrer" className="hover:text-zinc-900 transition-colors">GitHub</a>
-      <a href="https://www.linkedin.com/in/niraj-kamble-b11ra380/" target="_blank" rel="noreferrer" className="hover:text-zinc-900 transition-colors">LinkedIn</a>
-      <a href="https://www.instagram.com/niraj.b11r.a380/" target="_blank" rel="noreferrer" className="hover:text-zinc-900 transition-colors">Instagram</a>
+    <div className="flex justify-center gap-8 mt-4">
+      <a href="https://github.com/Cokaine29" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-zinc-900 transition-colors">
+        <Github className="w-4 h-4" />
+        GitHub
+      </a>
+      <a href="https://www.linkedin.com/in/niraj-kamble-b11ra380/" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-zinc-900 transition-colors">
+        <Linkedin className="w-4 h-4" />
+        LinkedIn
+      </a>
+      <a href="https://www.instagram.com/niraj.b11r.a380/" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-zinc-900 transition-colors">
+        <Instagram className="w-4 h-4" />
+        Instagram
+      </a>
     </div>
   </footer>
 );
