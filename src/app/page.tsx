@@ -19,7 +19,12 @@ export default function Home() {
       }
       window.scrollTo(0, 0);
     }
-  }, []);
+    
+    // If the backend auto-refresh token fails completely, force a re-login
+    if ((session as any)?.error === "RefreshAccessTokenError") {
+      signIn("google");
+    }
+  }, [session]);
 
   if (status === "loading") {
     return (
