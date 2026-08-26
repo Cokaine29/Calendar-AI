@@ -31,6 +31,17 @@
 
 ---
 
+## 📖 Usage (Hosted App)
+
+If you just want to use the application without deploying it yourself, you can access the live hosted version directly.
+
+1. **Navigate to the App:** Go to [calendar-ai-rouge.vercel.app](https://calendar-ai-rouge.vercel.app).
+2. **Authenticate:** Click "Continue with Google". *(Note: Because the app is pending Google Verification, you must click **Advanced** -> **Go to Calendar AI** to bypass the security warning).*
+3. **Parse Data:** Paste any unstructured text containing event details into the main text area and click "Extract Events".
+4. **Review & Push:** The AI will generate structured event blocks. Review the inferred times/locations, make any necessary edits, and click "Add to Calendar" to immediately sync them to your Google account.
+
+---
+
 ## 🏗 Architecture & Workflow
 
 1. **Authentication Layer:** The user authenticates via NextAuth.js utilizing the Google Provider. The application requests `offline` access to generate a persistent refresh token and the `calendar.events` scope.
