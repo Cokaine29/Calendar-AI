@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import { Groq } from 'groq-sdk';
 
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY
-});
+export const maxDuration = 60; // Allow function to run for up to 60 seconds
 
 export async function POST(request: Request) {
     try {
+        if (!process.env.GROQ_API_KEY) {
+            return NextResponse.json({ error: 'GROQ_API_KEY is missing from Vercel Environment Variables.' }, { status: 500 });
+        }
+
+        const groq = new Groq({
+            apiKey: process.env.GROQ_API_KEY
+        });
+
         const body = await request.json();
         const { email_text } = body;
 
