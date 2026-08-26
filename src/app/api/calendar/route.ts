@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { getToken } from 'next-auth/jwt';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });

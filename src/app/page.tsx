@@ -46,7 +46,7 @@ export default function Home() {
   const fetchCalendar = async () => {
     setLoadingCalendar(true);
     try {
-      const res = await fetch("/api/calendar");
+      const res = await fetch("/api/calendar", { cache: "no-store" });
       const data = await res.json();
       if (res.ok) {
         setUpcomingEvents(data.events || []);
