@@ -156,9 +156,17 @@ export default function Home() {
             <span className="text-4xl">📅</span>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Calendar AI</h1>
           </div>
-          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-sm font-medium text-slate-600">{session?.user?.email}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-sm font-medium text-slate-600">{session?.user?.email}</span>
+            </div>
+            <button
+              onClick={() => signOut()}
+              className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 hover:bg-slate-50"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
 
