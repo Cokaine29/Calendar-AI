@@ -1,5 +1,7 @@
 # 📅 Calendar AI
 
+**🌍 Live App:** [https://calendar-ai-rouge.vercel.app](https://calendar-ai-rouge.vercel.app)
+
 Calendar AI is a smart scheduling web application that uses Artificial Intelligence to instantly extract event details from messy, unstructured emails and automatically schedule them to your Google Calendar. 
 
 ## ✨ Features
