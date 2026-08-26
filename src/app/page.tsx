@@ -337,16 +337,24 @@ export default function Home() {
 
   // Custom event styles for the calendar
   const eventStyleGetter = (event: any, start: any, end: any, isSelected: boolean) => {
+    // Check if this event overlaps with any other event
+    const isOverlapping = calendarEvents.some(other => {
+      if (other === event) return false;
+      return event.start < other.end && event.end > other.start;
+    });
+
     return {
       style: {
-        backgroundColor: '#3b82f6',
+        backgroundColor: isOverlapping ? '#8b5cf6' : '#3b82f6', // Purple for overlaps, Blue for normal
         borderRadius: '8px',
-        opacity: 0.9,
+        opacity: 0.95,
         color: 'white',
-        border: '0px',
+        border: isOverlapping ? '1.5px solid white' : '0px', // White border prevents ugly blending
         display: 'block',
         fontSize: '12px',
-        fontWeight: '600'
+        fontWeight: '600',
+        padding: '2px 4px',
+        boxShadow: isOverlapping ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
       }
     };
   };
