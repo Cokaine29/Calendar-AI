@@ -23,11 +23,13 @@
 
 ## ⚡ Core Features
 
-- **Unstructured Data Parsing:** Extracts strict event parameters (Title, Start Time, End Time, Location, Context) from natural language using the `openai/gpt-oss-120b` model via Groq.
-- **Batch Processing:** Automatically detects and isolates multiple distinct events from a single block of text (e.g., parsing a syllabus or itinerary).
-- **Automated Scheduling:** Secure OAuth 2.0 integration with Google Workspace to push processed event payloads directly to the authenticated user's primary calendar.
-- **Smart Token Rotation:** Implements background refresh-token rotation to maintain persistent OAuth sessions without requiring re-authentication.
-- **Hyper-Minimal Interface:** A focus-driven, Apple-style minimalist UI built with Tailwind CSS, strictly optimized for speed and clarity.
+- **Unstructured Data Parsing:** Extracts strict event parameters (Title, Start Time, End Time, Location, Context) from natural language using the `llama3-70b-8192` model via Groq for ultra-fast, zero-shot inference.
+- **Timezone Aware:** Automatically detects the user's local browser timezone and injects it into the LLM prompt so relative dates ("tomorrow at 5 PM") are parsed with absolute accuracy.
+- **Smart Conflict Detection:** Validates extracted events against your live Google Calendar. If a scheduled time overlaps with an existing meeting, the UI automatically flags it with a contextual conflict warning.
+- **Live Calendar Grid:** Features a fully integrated, interactive weekly schedule built on `react-big-calendar`. Dynamically switches to a sleek "Day View" agenda on mobile devices.
+- **Universal `.ics` Export:** Instantly generate and download standard calendar files for any extracted event, allowing seamless sharing to Apple Calendar, Outlook, or Yahoo.
+- **Automated Scheduling:** Secure OAuth 2.0 integration with Google Workspace to push processed event payloads directly to the authenticated user's primary calendar in one click.
+- **Hyper-Minimal Interface:** A focus-driven, Apple-style minimalist UI built with Tailwind CSS, strictly optimized for speed and clarity, featuring animated toast notifications via `sonner`.
 
 ---
 
@@ -46,7 +48,7 @@ If you just want to use the application without deploying it yourself, you can a
 
 1. **Authentication Layer:** The user authenticates via NextAuth.js utilizing the Google Provider. The application requests `offline` access to generate a persistent refresh token and the `calendar.events` scope.
 2. **Inference Pipeline:** Unstructured text is posted to a serverless Next.js API route (`/api/extract`). The backend initializes the Groq SDK, injecting strict JSON schema enforcement prompts to guarantee normalized date-time outputs.
-3. **Client Review:** The parsed JSON payload is returned to the client and rendered in an editable schema, allowing the user to mutate or delete inferred event blocks prior to commitment.
+3. **Client Review:** The parsed JSON payload is returned to the client and rendered in an editable schema. The client cross-references the payload with the `/api/calendar` GET endpoint to detect real-time scheduling conflicts.
 4. **Calendar Push:** Finalized payloads are dispatched to `/api/schedule`, where the backend uses the securely stored OAuth access token (rotating it if expired) to invoke the Google Calendar `insert` API.
 
 ---
@@ -57,10 +59,11 @@ If you just want to use the application without deploying it yourself, you can a
 |---|---|
 | **Framework** | Next.js 16 (App Router) |
 | **Language** | TypeScript |
-| **Styling** | Tailwind CSS v4 |
+| **Styling** | Tailwind CSS v4, Lucide React, React Icons |
 | **Authentication** | NextAuth.js |
-| **LLM Inference** | Groq SDK (`openai/gpt-oss-120b`) |
+| **LLM Inference** | Groq SDK (`llama3-70b-8192`) |
 | **External API** | Google Calendar API (`googleapis`) |
+| **Components** | React Big Calendar, Sonner |
 
 ---
 
@@ -74,12 +77,12 @@ If you just want to use the application without deploying it yourself, you can a
 ### 2. Clone the Repository
 ```bash
 git clone https://github.com/Cokaine29/Calendar-AI.git
-cd Calendar-AI
+cd Calendar-AI/web
 npm install
 ```
 
 ### 3. Environment Configuration
-Create a `.env.local` file at the root of the project and populate the following variables:
+Create a `.env.local` file at the root of the project (`web/`) and populate the following variables:
 
 ```env
 # Google OAuth Credentials
