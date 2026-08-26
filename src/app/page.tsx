@@ -642,6 +642,21 @@ export default function Home() {
         .rbc-event {
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+        .rbc-current-time-indicator {
+          background-color: #ef4444 !important;
+          height: 2px !important;
+          z-index: 10;
+        }
+        .rbc-current-time-indicator::before {
+          content: "";
+          position: absolute;
+          left: -4px;
+          top: -3px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background-color: #ef4444;
+        }
         .rbc-btn-group button {
           border: 1px solid #e4e4e7;
           color: #52525b;
