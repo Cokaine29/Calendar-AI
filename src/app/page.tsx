@@ -6,8 +6,8 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import { toast } from "sonner";
-import { RefreshCw, Download, CalendarPlus, FileText, CheckCircle2 } from "lucide-react";
-import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
+import { RefreshCw, Download, CalendarPlus, FileText, CheckCircle2, Share2, X, Copy, Mail } from "lucide-react";
+import { FaGithub, FaLinkedin, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const locales = {
@@ -49,6 +49,8 @@ export default function Home() {
   const [loadingExtract, setLoadingExtract] = useState(false);
   const [loadingSchedule, setLoadingSchedule] = useState(false);
   const [scheduledLinks, setScheduledLinks] = useState<any[]>([]);
+  const [shareableLinks, setShareableLinks] = useState<string[]>([]);
+  const [activeShareIndex, setActiveShareIndex] = useState<number | null>(null);
   
   // New Calendar State
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
@@ -257,6 +259,24 @@ export default function Home() {
         end_time: ev.end_time ? new Date(ev.end_time).toISOString() : null
       }));
 
+      // Generate shareable Google Calendar invite URLs from event data
+      const inviteUrls = events.map(ev => {
+        const formatGcalDate = (iso: string) =>
+          new Date(iso).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        const start = formatGcalDate(ev.start_time);
+        const end = ev.end_time
+          ? formatGcalDate(ev.end_time)
+          : formatGcalDate(new Date(new Date(ev.start_time).getTime() + 3600000).toISOString());
+        const params = new URLSearchParams({
+          action: 'TEMPLATE',
+          text: ev.title || 'Event',
+          dates: `${start}/${end}`,
+          details: ev.description || '',
+          location: ev.location || '',
+        });
+        return `https://calendar.google.com/calendar/render?${params.toString()}`;
+      });
+
       const res = await fetch("/api/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -265,10 +285,11 @@ export default function Home() {
       const data = await res.json();
       if (res.ok) {
         setScheduledLinks(data.links || []);
+        setShareableLinks(inviteUrls);
         toast.success("Successfully scheduled to your calendar!");
         setEvents([]);
         setEmailText(""); 
-        fetchCalendar(); // Refresh the right-hand calendar!
+        fetchCalendar();
       } else {
         toast.error(data.error || "Failed to schedule events.");
       }
@@ -415,25 +436,100 @@ export default function Home() {
 
           {/* Success Links */}
           {scheduledLinks.length > 0 && (
-            <div className="mb-12 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            <div className="mb-12 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="flex flex-col items-center mb-6">
+                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h3 className="text-2xl font-semibold tracking-tight">Successfully Scheduled</h3>
+                <p className="text-sm text-zinc-400 mt-1">Share an invite link with attendees</p>
               </div>
-              <h3 className="text-2xl font-semibold tracking-tight mb-6">Successfully Scheduled</h3>
-              <div className="flex flex-col gap-3 max-w-sm mx-auto mb-8">
+
+              <div className="flex flex-col gap-4">
                 {scheduledLinks.map((item, i) => (
-                  <a key={i} href={item.link} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-6 py-3 rounded-full transition-colors flex items-center justify-center gap-2">
-                    <span>Open <strong>{item.title}</strong></span>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                  </a>
+                  <div key={i} className="relative">
+                    <div className="flex items-center gap-3 p-4 bg-zinc-50 rounded-2xl">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-zinc-800 text-sm truncate">{item.title}</p>
+                      </div>
+                      <a href={item.link} target="_blank" rel="noreferrer"
+                        className="text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-full hover:bg-zinc-200 shrink-0">
+                        Open mine
+                      </a>
+                      <button
+                        onClick={() => setActiveShareIndex(activeShareIndex === i ? null : i)}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-700 px-3 py-1.5 rounded-full transition-colors shrink-0"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        Share
+                      </button>
+                    </div>
+
+                    {/* Share Sheet Dropdown */}
+                    {activeShareIndex === i && shareableLinks[i] && (
+                      <div className="mt-2 p-4 bg-white border border-zinc-100 rounded-2xl shadow-lg z-20 relative">
+                        <div className="flex justify-between items-center mb-3">
+                          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Share invite</p>
+                          <button onClick={() => setActiveShareIndex(null)} className="text-zinc-300 hover:text-zinc-600 transition-colors">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* Copy Link */}
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(shareableLinks[i]);
+                              toast.success("Invite link copied!");
+                            }}
+                            className="flex items-center gap-2 px-4 py-3 bg-zinc-50 hover:bg-zinc-100 rounded-xl text-sm font-medium text-zinc-700 transition-colors"
+                          >
+                            <Copy className="w-4 h-4 text-zinc-400" />
+                            Copy Link
+                          </button>
+                          {/* WhatsApp */}
+                          <a
+                            href={`https://wa.me/?text=${encodeURIComponent(`You're invited to "${item.title}"! Add it to your calendar: ${shareableLinks[i]}`)}`}
+                            target="_blank" rel="noreferrer"
+                            className="flex items-center gap-2 px-4 py-3 bg-green-50 hover:bg-green-100 rounded-xl text-sm font-medium text-green-700 transition-colors"
+                          >
+                            <FaWhatsapp className="w-4 h-4" />
+                            WhatsApp
+                          </a>
+                          {/* Email */}
+                          <a
+                            href={`mailto:?subject=${encodeURIComponent(`Invite: ${item.title}`)}&body=${encodeURIComponent(`Hi,\n\nYou're invited to "${item.title}".\n\nClick the link below to add it to your calendar:\n${shareableLinks[i]}\n\nSee you there!`)}`}
+                            className="flex items-center gap-2 px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-xl text-sm font-medium text-blue-700 transition-colors"
+                          >
+                            <Mail className="w-4 h-4" />
+                            Email
+                          </a>
+                          {/* Add to Calendar (for recipient) */}
+                          <a
+                            href={shareableLinks[i]}
+                            target="_blank" rel="noreferrer"
+                            className="flex items-center gap-2 px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-xl text-sm font-medium text-purple-700 transition-colors"
+                          >
+                            <CalendarPlus className="w-4 h-4" />
+                            Add to Cal
+                          </a>
+                        </div>
+                        <div className="mt-3 flex items-center gap-2 p-3 bg-zinc-50 rounded-xl">
+                          <p className="text-xs text-zinc-400 truncate flex-1">{shareableLinks[i].slice(0, 60)}...</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
-              <button
-                onClick={() => setScheduledLinks([])}
-                className="text-sm font-medium text-zinc-500 hover:text-zinc-800 transition-colors"
-              >
-                Schedule Another
-              </button>
+
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => { setScheduledLinks([]); setShareableLinks([]); setActiveShareIndex(null); }}
+                  className="text-sm font-medium text-zinc-500 hover:text-zinc-800 transition-colors"
+                >
+                  Schedule Another
+                </button>
+              </div>
             </div>
           )}
 
