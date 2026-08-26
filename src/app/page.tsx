@@ -11,6 +11,24 @@ export default function Home() {
   const [loadingSchedule, setLoadingSchedule] = useState(false);
   const [message, setMessage] = useState("");
   const [scheduledLinks, setScheduledLinks] = useState<string[]>([]);
+  
+  // New Calendar State
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+  const [loadingCalendar, setLoadingCalendar] = useState(false);
+
+  const fetchCalendar = async () => {
+    setLoadingCalendar(true);
+    try {
+      const res = await fetch("/api/calendar");
+      const data = await res.json();
+      if (res.ok) {
+        setUpcomingEvents(data.events || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch calendar", err);
+    }
+    setLoadingCalendar(false);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -24,6 +42,12 @@ export default function Home() {
       signIn("google");
     }
   }, [session]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchCalendar();
+    }
+  }, [status]);
 
   if (status === "loading") {
     return (
@@ -121,6 +145,7 @@ export default function Home() {
         setScheduledLinks(data.links || []);
         setEvents([]);
         setEmailText(""); 
+        fetchCalendar(); // Refresh the right-hand calendar!
       } else {
         setMessage(data.error);
       }
@@ -151,11 +176,29 @@ export default function Home() {
     setEvents(updated);
   };
 
+  // Format time for the calendar agenda (e.g. "2:30 PM")
+  const formatTime = (isoString: string, isAllDay: boolean) => {
+    if (isAllDay) return "All Day";
+    const d = new Date(isoString);
+    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  };
+
+  // Group events by day
+  const groupedEvents = upcomingEvents.reduce((acc: any, ev: any) => {
+    if (!ev.start) return acc;
+    const dateObj = new Date(ev.start);
+    // Format: "Mon, Aug 26"
+    const dateStr = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    if (!acc[dateStr]) acc[dateStr] = [];
+    acc[dateStr].push(ev);
+    return acc;
+  }, {});
+
   return (
     <div className="min-h-screen bg-[#fbfbfd] text-zinc-900 font-sans selection:bg-blue-200">
       
       {/* Hyper-minimal Header */}
-      <header className="w-full flex justify-between items-center px-6 py-8 sm:px-12 max-w-6xl mx-auto">
+      <header className="w-full flex justify-between items-center px-6 py-6 sm:px-12 max-w-[90rem] mx-auto">
         <div className="text-xl font-semibold tracking-tight">Calendar AI</div>
         <div className="flex items-center gap-6">
           <span className="text-sm font-medium text-zinc-500 hidden sm:block">{session?.user?.email}</span>
@@ -168,148 +211,211 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 pb-24">
+      {/* Main Split Layout */}
+      <main className="max-w-[90rem] mx-auto px-6 pb-24 grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 items-start mt-8">
         
-        {/* Input Section */}
-        <div className="mt-12 mb-16">
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-8">What needs scheduling?</h2>
-          <div className="relative group">
-            <textarea
-              className="w-full h-64 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus:shadow-[0_8px_40px_rgb(0,0,0,0.08)] outline-none transition-shadow duration-500 text-zinc-800 resize-none font-medium text-lg placeholder:text-zinc-400 border border-zinc-200 leading-relaxed"
-              placeholder="Paste any unstructured text, email, or meeting notes here..."
-              value={emailText}
-              onChange={(e) => setEmailText(e.target.value)}
-            />
-          </div>
-          <div className="mt-8 flex justify-end">
-            <button
-              onClick={handleExtract}
-              disabled={loadingExtract}
-              className="px-8 py-3.5 bg-zinc-900 text-white font-medium text-base rounded-full hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
-            >
-              {loadingExtract ? "Analyzing..." : "Extract Events"}
-            </button>
-          </div>
-        </div>
-
-        {/* Error / Status Message */}
-        {message && (
-          <div className="mb-12 p-6 bg-rose-50 text-rose-800 rounded-3xl font-medium text-center">
-            {message}
-          </div>
-        )}
-
-        {/* Success Links */}
-        {scheduledLinks.length > 0 && (
-          <div className="mb-12 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+        {/* Left Column: Extraction UI */}
+        <div>
+          <div className="mb-16">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-8">What needs scheduling?</h2>
+            <div className="relative group">
+              <textarea
+                className="w-full h-64 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus:shadow-[0_8px_40px_rgb(0,0,0,0.08)] outline-none transition-shadow duration-500 text-zinc-800 resize-none font-medium text-lg placeholder:text-zinc-400 border border-zinc-200 leading-relaxed"
+                placeholder="Paste any unstructured text, email, or meeting notes here..."
+                value={emailText}
+                onChange={(e) => setEmailText(e.target.value)}
+              />
             </div>
-            <h3 className="text-2xl font-semibold tracking-tight mb-6">Successfully Scheduled</h3>
-            <div className="flex flex-col gap-3 max-w-sm mx-auto">
-              {scheduledLinks.map((link, i) => (
-                <a key={i} href={link} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-6 py-3 rounded-full transition-colors">
-                  Open Event {i + 1} in Google Calendar
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Results Section */}
-        {events.length > 0 && (
-          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <h2 className="text-2xl font-semibold tracking-tight mb-8 px-2 text-zinc-400">Review {events.length} event(s)</h2>
-            
-            <div className="space-y-8">
-              {events.map((ev, i) => (
-                <div key={i} className="p-8 sm:p-10 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative border border-zinc-100">
-                  
-                  <div className="flex justify-between items-start mb-8">
-                    <input
-                      type="text"
-                      value={ev.title || ""}
-                      onChange={(e) => updateEvent(i, "title", e.target.value)}
-                      placeholder="Event Title"
-                      className="w-full bg-transparent outline-none text-zinc-900 font-semibold text-2xl sm:text-3xl tracking-tight placeholder:text-zinc-300"
-                    />
-                    <button 
-                      onClick={() => removeEvent(i)}
-                      className="ml-4 w-8 h-8 flex items-center justify-center text-zinc-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors shrink-0"
-                      title="Remove Event"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-400 mb-2">Location / Meeting Link</label>
-                      <input
-                        type="text"
-                        value={ev.location || ""}
-                        onChange={(e) => updateEvent(i, "location", e.target.value)}
-                        className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
-                        placeholder="Add location or video link"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-zinc-400 mb-2">Starts</label>
-                        <input
-                          type="datetime-local"
-                          value={formatForInput(ev.start_time)}
-                          onChange={(e) => updateEvent(i, "start_time", parseFromInput(e.target.value))}
-                          className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-zinc-400 mb-2">Ends</label>
-                        <input
-                          type="datetime-local"
-                          value={formatForInput(ev.end_time)}
-                          onChange={(e) => updateEvent(i, "end_time", parseFromInput(e.target.value))}
-                          className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-400 mb-2">Notes</label>
-                      <textarea
-                        value={ev.description || ""}
-                        onChange={(e) => updateEvent(i, "description", e.target.value)}
-                        className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium h-32 resize-none transition-colors border-none leading-relaxed"
-                        placeholder="Add notes..."
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-12 flex justify-end">
+            <div className="mt-8 flex justify-end">
               <button
-                onClick={handleScheduleAll}
-                disabled={loadingSchedule}
-                className="w-full sm:w-auto px-10 py-4 bg-blue-600 text-white font-medium text-lg rounded-full hover:bg-blue-700 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-all shadow-md flex items-center justify-center gap-2"
+                onClick={handleExtract}
+                disabled={loadingExtract}
+                className="px-8 py-3.5 bg-zinc-900 text-white font-medium text-base rounded-full hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
               >
-                {loadingSchedule ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
-                    Scheduling...
-                  </>
-                ) : (
-                  "Add to Calendar"
-                )}
+                {loadingExtract ? "Analyzing..." : "Extract Events"}
               </button>
             </div>
           </div>
-        )}
+
+          {/* Error / Status Message */}
+          {message && (
+            <div className="mb-12 p-6 bg-rose-50 text-rose-800 rounded-3xl font-medium text-center">
+              {message}
+            </div>
+          )}
+
+          {/* Success Links */}
+          {scheduledLinks.length > 0 && (
+            <div className="mb-12 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <h3 className="text-2xl font-semibold tracking-tight mb-6">Successfully Scheduled</h3>
+              <div className="flex flex-col gap-3 max-w-sm mx-auto">
+                {scheduledLinks.map((link, i) => (
+                  <a key={i} href={link} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-6 py-3 rounded-full transition-colors">
+                    Open Event {i + 1} in Google Calendar
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Results Section */}
+          {events.length > 0 && (
+            <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <h2 className="text-2xl font-semibold tracking-tight mb-8 px-2 text-zinc-400">Review {events.length} event(s)</h2>
+              
+              <div className="space-y-8">
+                {events.map((ev, i) => (
+                  <div key={i} className="p-8 sm:p-10 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative border border-zinc-100">
+                    
+                    <div className="flex justify-between items-start mb-8">
+                      <input
+                        type="text"
+                        value={ev.title || ""}
+                        onChange={(e) => updateEvent(i, "title", e.target.value)}
+                        placeholder="Event Title"
+                        className="w-full bg-transparent outline-none text-zinc-900 font-semibold text-2xl sm:text-3xl tracking-tight placeholder:text-zinc-300"
+                      />
+                      <button 
+                        onClick={() => removeEvent(i)}
+                        className="ml-4 w-8 h-8 flex items-center justify-center text-zinc-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors shrink-0"
+                        title="Remove Event"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-400 mb-2">Location / Meeting Link</label>
+                        <input
+                          type="text"
+                          value={ev.location || ""}
+                          onChange={(e) => updateEvent(i, "location", e.target.value)}
+                          className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
+                          placeholder="Add location or video link"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-400 mb-2">Starts</label>
+                          <input
+                            type="datetime-local"
+                            value={formatForInput(ev.start_time)}
+                            onChange={(e) => updateEvent(i, "start_time", parseFromInput(e.target.value))}
+                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-400 mb-2">Ends</label>
+                          <input
+                            type="datetime-local"
+                            value={formatForInput(ev.end_time)}
+                            onChange={(e) => updateEvent(i, "end_time", parseFromInput(e.target.value))}
+                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-400 mb-2">Notes</label>
+                        <textarea
+                          value={ev.description || ""}
+                          onChange={(e) => updateEvent(i, "description", e.target.value)}
+                          className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium h-32 resize-none transition-colors border-none leading-relaxed"
+                          placeholder="Add notes..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-12 flex justify-end">
+                <button
+                  onClick={handleScheduleAll}
+                  disabled={loadingSchedule}
+                  className="w-full sm:w-auto px-10 py-4 bg-blue-600 text-white font-medium text-lg rounded-full hover:bg-blue-700 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  {loadingSchedule ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
+                      Scheduling...
+                    </>
+                  ) : (
+                    "Add to Calendar"
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Calendar Agenda */}
+        <div className="lg:border-l lg:border-zinc-200 lg:pl-12">
+          <div className="sticky top-12">
+            <h3 className="text-xl font-semibold tracking-tight mb-8">Upcoming Schedule</h3>
+            
+            {loadingCalendar ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-zinc-300 border-t-zinc-800"></div>
+              </div>
+            ) : upcomingEvents.length === 0 ? (
+              <div className="text-center py-12 px-4 bg-white rounded-3xl border border-zinc-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
+                <div className="text-4xl mb-4 grayscale opacity-40">🗓️</div>
+                <p className="text-zinc-500 font-medium">Your week looks completely clear.</p>
+              </div>
+            ) : (
+              <div className="space-y-8 max-h-[calc(100vh-120px)] overflow-y-auto pr-4 custom-scrollbar">
+                {Object.keys(groupedEvents).map(dateStr => (
+                  <div key={dateStr}>
+                    <h4 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">{dateStr}</h4>
+                    <div className="space-y-3">
+                      {groupedEvents[dateStr].map((ev: any) => (
+                        <a 
+                          key={ev.id} 
+                          href={ev.htmlLink} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="block p-4 bg-white rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_4px_16px_rgb(0,0,0,0.04)] border border-zinc-100/50 hover:border-zinc-200 transition-all group"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
+                            <div>
+                              <p className="font-medium text-zinc-900 group-hover:text-blue-600 transition-colors line-clamp-1">{ev.title}</p>
+                              <p className="text-sm text-zinc-500 mt-1">{formatTime(ev.start, ev.isAllDay)}</p>
+                            </div>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
       </main>
+      
+      {/* Hide scrollbar logic for calendar sidebar */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e4e4e7;
+          border-radius: 4px;
+        }
+      `}} />
     </div>
   );
 }
