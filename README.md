@@ -8,6 +8,12 @@ Calendar AI is a smart scheduling web application that uses Artificial Intellige
 - **One-Click Scheduling:** Securely log in with Google OAuth and schedule all your extracted events straight to your primary Google Calendar in a single click.
 - **Manual Review:** Edit the extracted times or titles, or click the Trash Can icon to remove unwanted events before scheduling.
 
+## 💡 How to Use
+1. **Sign In:** Click "Continue with Google" to securely log in. *(Note: If the app is unverified, click "Advanced" -> "Go to Calendar AI" to proceed).*
+2. **Paste Text:** Copy and paste any unstructured text—like an email, Slack message, or meeting notes—into the text box.
+3. **Magic Extract:** Click "Extract Events" and let the AI instantly parse the dates, times, and context.
+4. **Review & Schedule:** Edit the details if needed, or delete unwanted events. Click "Add to Calendar" and they will instantly appear on your Google Calendar!
+
 ## 🛠 Tech Stack
 - **Frontend:** Next.js 16 (App Router), React, Tailwind CSS v4
 - **Backend:** Next.js Serverless API Routes
