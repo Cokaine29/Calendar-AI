@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📅 Calendar AI
 
-## Getting Started
+Calendar AI is a smart scheduling web application that uses Artificial Intelligence to instantly extract event details from messy, unstructured emails and automatically schedule them to your Google Calendar. 
 
-First, run the development server:
+## ✨ Features
+- **AI-Powered Extraction:** Paste an email, and the AI (powered by Groq) will intelligently extract the event title, start time, end time, location, and context.
+- **Multi-Event Support:** If an email contains a schedule of multiple lectures or workshops, the AI will extract all of them into a clean list.
+- **One-Click Scheduling:** Securely log in with Google OAuth and schedule all your extracted events straight to your primary Google Calendar in a single click.
+- **Manual Review:** Edit the extracted times or titles, or click the Trash Can icon to remove unwanted events before scheduling.
 
+## 🛠 Tech Stack
+- **Frontend:** Next.js 16 (App Router), React, Tailwind CSS v4
+- **Backend:** Next.js Serverless API Routes
+- **Authentication:** NextAuth.js (Google Provider)
+- **AI/LLM:** Groq SDK (`openai/gpt-oss-120b`)
+- **Calendar API:** Google APIs (`googleapis`)
+
+---
+
+## 🚀 Local Setup
+
+### 1. Prerequisites
+You will need a [Groq API Key](https://console.groq.com/keys) and Google Cloud credentials (Web Client ID and Secret) with the Google Calendar API enabled.
+
+### 2. Clone and Install
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Cokaine29/Calendar-AI.git
+cd Calendar-AI
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Environment Variables
+Create a `.env.local` file in the root directory and add the following keys:
+```env
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+GROQ_API_KEY="your-groq-api-key"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# NextAuth Configuration
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="any-random-string-for-security"
+```
 
-## Learn More
+### 4. Run the Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser. 
 
-To learn more about Next.js, take a look at the following resources:
+*(Note: Ensure your `http://localhost:3000/api/auth/callback/google` is added to your Authorized Redirect URIs in the Google Cloud Console).*
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## ☁️ Deployment (Vercel)
+This app is designed to be easily deployed on [Vercel](https://vercel.com/):
+1. Import the GitHub repository to Vercel.
+2. Add your 4 Environment Variables in the Vercel dashboard. (You can skip `NEXTAUTH_URL` as Vercel sets it automatically).
+3. Click **Deploy**.
+4. **Crucial Step:** Once deployed, you must copy your live Vercel URL (e.g., `https://calendar-ai-rouge.vercel.app/api/auth/callback/google`) and add it to your **Authorized redirect URIs** in your Google Cloud Console, otherwise Google will block the login.
