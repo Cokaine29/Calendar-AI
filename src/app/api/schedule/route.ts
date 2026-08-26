@@ -53,7 +53,10 @@ export async function POST(request: Request) {
             
             if (res.data && res.data.htmlLink) {
                 console.log("Event created successfully:", res.data.htmlLink);
-                results.push(res.data.htmlLink);
+                results.push({
+                    title: eventPayload.summary,
+                    link: res.data.htmlLink
+                });
             } else {
                 console.log("Google API succeeded but returned no htmlLink:", res.data);
             }
