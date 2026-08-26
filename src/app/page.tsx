@@ -2,6 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import format from 'date-fns/format';
+import parse from 'date-fns/parse';
+import startOfWeek from 'date-fns/startOfWeek';
+import getDay from 'date-fns/getDay';
+import enUS from 'date-fns/locale/en-US';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+const locales = {
+  'en-US': enUS,
+}
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+})
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -176,29 +195,35 @@ export default function Home() {
     setEvents(updated);
   };
 
-  // Format time for the calendar agenda (e.g. "2:30 PM")
-  const formatTime = (isoString: string, isAllDay: boolean) => {
-    if (isAllDay) return "All Day";
-    const d = new Date(isoString);
-    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  };
+  const calendarEvents = upcomingEvents.map(ev => ({
+    title: ev.title,
+    start: new Date(ev.start),
+    end: ev.end ? new Date(ev.end) : new Date(new Date(ev.start).getTime() + 60*60*1000), // Default 1 hour if missing
+    allDay: ev.isAllDay,
+    resource: ev
+  }));
 
-  // Group events by day
-  const groupedEvents = upcomingEvents.reduce((acc: any, ev: any) => {
-    if (!ev.start) return acc;
-    const dateObj = new Date(ev.start);
-    // Format: "Mon, Aug 26"
-    const dateStr = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-    if (!acc[dateStr]) acc[dateStr] = [];
-    acc[dateStr].push(ev);
-    return acc;
-  }, {});
+  // Custom event styles for the calendar
+  const eventStyleGetter = (event: any, start: any, end: any, isSelected: boolean) => {
+    return {
+      style: {
+        backgroundColor: '#3b82f6',
+        borderRadius: '8px',
+        opacity: 0.9,
+        color: 'white',
+        border: '0px',
+        display: 'block',
+        fontSize: '12px',
+        fontWeight: '600'
+      }
+    };
+  };
 
   return (
     <div className="min-h-screen bg-[#fbfbfd] text-zinc-900 font-sans selection:bg-blue-200">
       
       {/* Hyper-minimal Header */}
-      <header className="w-full flex justify-between items-center px-6 py-6 sm:px-12 max-w-[90rem] mx-auto">
+      <header className="w-full flex justify-between items-center px-6 py-6 sm:px-12 max-w-[120rem] mx-auto">
         <div className="text-xl font-semibold tracking-tight">Calendar AI</div>
         <div className="flex items-center gap-6">
           <span className="text-sm font-medium text-zinc-500 hidden sm:block">{session?.user?.email}</span>
@@ -212,10 +237,10 @@ export default function Home() {
       </header>
 
       {/* Main Split Layout */}
-      <main className="max-w-[90rem] mx-auto px-6 pb-24 grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 items-start mt-8">
+      <main className="max-w-[120rem] mx-auto px-6 pb-24 grid grid-cols-1 xl:grid-cols-2 gap-12 items-start mt-8">
         
         {/* Left Column: Extraction UI */}
-        <div>
+        <div className="max-w-3xl w-full mx-auto xl:mx-0">
           <div className="mb-16">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-8">What needs scheduling?</h2>
             <div className="relative group">
@@ -356,64 +381,104 @@ export default function Home() {
           )}
         </div>
 
-        {/* Right Column: Calendar Agenda */}
-        <div className="lg:border-l lg:border-zinc-200 lg:pl-12">
-          <div className="sticky top-12">
-            <h3 className="text-xl font-semibold tracking-tight mb-8">Upcoming Schedule</h3>
-            
-            {loadingCalendar ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-zinc-300 border-t-zinc-800"></div>
-              </div>
-            ) : upcomingEvents.length === 0 ? (
-              <div className="text-center py-12 px-4 bg-white rounded-3xl border border-zinc-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
-                <div className="text-4xl mb-4 grayscale opacity-40">🗓️</div>
-                <p className="text-zinc-500 font-medium">Your week looks completely clear.</p>
-              </div>
-            ) : (
-              <div className="space-y-8 max-h-[calc(100vh-120px)] overflow-y-auto pr-4 custom-scrollbar">
-                {Object.keys(groupedEvents).map(dateStr => (
-                  <div key={dateStr}>
-                    <h4 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">{dateStr}</h4>
-                    <div className="space-y-3">
-                      {groupedEvents[dateStr].map((ev: any) => (
-                        <a 
-                          key={ev.id} 
-                          href={ev.htmlLink} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="block p-4 bg-white rounded-2xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_4px_16px_rgb(0,0,0,0.04)] border border-zinc-100/50 hover:border-zinc-200 transition-all group"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
-                            <div>
-                              <p className="font-medium text-zinc-900 group-hover:text-blue-600 transition-colors line-clamp-1">{ev.title}</p>
-                              <p className="text-sm text-zinc-500 mt-1">{formatTime(ev.start, ev.isAllDay)}</p>
-                            </div>
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Right Column: Weekly Calendar Grid */}
+        <div className="w-full bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/50 sticky top-12 h-[800px]">
+          <h3 className="text-xl font-semibold tracking-tight mb-6">Upcoming Schedule</h3>
+          
+          {loadingCalendar ? (
+            <div className="flex justify-center items-center h-full pb-16">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-zinc-300 border-t-zinc-800"></div>
+            </div>
+          ) : (
+            <div className="h-[90%]">
+              <Calendar
+                localizer={localizer}
+                events={calendarEvents}
+                startAccessor="start"
+                endAccessor="end"
+                defaultView="week"
+                views={['week', 'day']}
+                eventPropGetter={eventStyleGetter}
+                onSelectEvent={(event) => {
+                  if (event.resource.htmlLink) {
+                    window.open(event.resource.htmlLink, '_blank');
+                  }
+                }}
+                style={{ height: '100%', fontFamily: 'inherit' }}
+              />
+            </div>
+          )}
         </div>
-
       </main>
-      
-      {/* Hide scrollbar logic for calendar sidebar */}
+
+      {/* Calendar Override Styles */}
       <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
+        .rbc-calendar {
+          border: none;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+        .rbc-time-view {
+          border: none;
+          border-top: 1px solid #f4f4f5;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e4e4e7;
-          border-radius: 4px;
+        .rbc-time-header {
+          border-bottom: 1px solid #f4f4f5;
+        }
+        .rbc-header {
+          border-bottom: none;
+          border-left: 1px solid #f4f4f5;
+          padding: 12px 0;
+          font-weight: 600;
+          color: #71717a;
+          text-transform: uppercase;
+          font-size: 11px;
+          letter-spacing: 0.05em;
+        }
+        .rbc-time-content {
+          border-top: none;
+        }
+        .rbc-time-content > * + * > * {
+          border-left: 1px solid #f4f4f5;
+        }
+        .rbc-timeslot-group {
+          border-bottom: 1px solid #f4f4f5;
+          min-height: 60px;
+        }
+        .rbc-time-slot {
+          border-top: none;
+        }
+        .rbc-day-slot .rbc-time-slot {
+          border-top: 1px solid #fafafa;
+        }
+        .rbc-day-slot .rbc-events-container {
+          margin-right: 4px;
+        }
+        .rbc-event {
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .rbc-btn-group button {
+          border: 1px solid #e4e4e7;
+          color: #52525b;
+          background: white;
+          font-weight: 500;
+          padding: 6px 12px;
+        }
+        .rbc-btn-group button.rbc-active {
+          background: #f4f4f5;
+          box-shadow: none;
+        }
+        .rbc-btn-group button:hover {
+          background: #fafafa;
+        }
+        .rbc-toolbar button:active, .rbc-toolbar button.rbc-active:active, .rbc-toolbar button.rbc-active:hover, .rbc-toolbar button.rbc-active:focus {
+          background-color: #f4f4f5;
+          box-shadow: none;
+        }
+        .rbc-toolbar {
+          margin-bottom: 16px;
+        }
+        .rbc-toolbar-label {
+          font-weight: 600;
+          font-size: 16px;
         }
       `}} />
     </div>
