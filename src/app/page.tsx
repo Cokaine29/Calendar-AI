@@ -39,7 +39,7 @@ export default function Home() {
         <div className="text-center max-w-lg w-full">
           <h1 className="text-5xl md:text-6xl font-semibold text-zinc-900 mb-6 tracking-tight">Calendar AI.</h1>
           <p className="text-xl text-zinc-500 mb-12 font-medium tracking-tight">
-            The most intelligent way to schedule.
+            The intelligent way to schedule.
           </p>
           <button
             onClick={() => signIn("google")}
