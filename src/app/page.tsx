@@ -116,22 +116,22 @@ export default function Home() {
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4">
               <FileText className="w-6 h-6" />
             </div>
-            <h3 className="font-semibold text-lg mb-2">Paste Text</h3>
-            <p className="text-sm text-zinc-500">Drop in unstructured emails, messages, or meeting notes.</p>
+            <h3 className="font-semibold text-lg mb-2">Drop Any Text</h3>
+            <p className="text-sm text-zinc-500">Emails, Slack threads, WhatsApp messages. If it mentions a time, we catch it.</p>
           </div>
           <div className="bg-white p-6 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-100 flex flex-col items-center text-center">
             <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-4">
               <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h3 className="font-semibold text-lg mb-2">AI Extraction</h3>
-            <p className="text-sm text-zinc-500">Automatically parses dates, times, locations, and contexts.</p>
+            <h3 className="font-semibold text-lg mb-2">AI Does the Work</h3>
+            <p className="text-sm text-zinc-500">Extracts every event — titles, dates, locations, descriptions — with zero manual input.</p>
           </div>
           <div className="bg-white p-6 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-zinc-100 flex flex-col items-center text-center">
             <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-4">
               <CalendarPlus className="w-6 h-6" />
             </div>
-            <h3 className="font-semibold text-lg mb-2">One-Click Sync</h3>
-            <p className="text-sm text-zinc-500">Push verified events directly to your Google Calendar.</p>
+            <h3 className="font-semibold text-lg mb-2">Straight to Calendar</h3>
+            <p className="text-sm text-zinc-500">Review, edit, and push directly to Google Calendar in one click. No copy-pasting.</p>
           </div>
         </div>
 
@@ -379,7 +379,7 @@ export default function Home() {
               <textarea
                 disabled={loadingExtract || loadingSchedule}
                 className="w-full h-64 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus:shadow-[0_8px_40px_rgb(0,0,0,0.08)] outline-none transition-shadow duration-500 text-zinc-800 resize-none font-medium text-lg placeholder:text-zinc-400 border border-zinc-200 leading-relaxed disabled:opacity-50"
-                placeholder="Paste any unstructured text, email, or meeting notes here..."
+                placeholder="Paste an email, Slack message, or meeting notes — the AI handles the rest."
                 value={emailText}
                 onChange={(e) => setEmailText(e.target.value)}
               />
@@ -470,7 +470,7 @@ export default function Home() {
                           value={ev.location || ""}
                           onChange={(e) => updateEvent(i, "location", e.target.value)}
                           className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
-                          placeholder="Add location or video link"
+                          placeholder="e.g. Room 204, Zoom link, Google Meet URL"
                         />
                       </div>
 
@@ -496,12 +496,12 @@ export default function Home() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-zinc-400 mb-2">Notes</label>
+                        <label className="block text-sm font-medium text-zinc-400 mb-2">Additional Context</label>
                         <textarea
                           value={ev.description || ""}
                           onChange={(e) => updateEvent(i, "description", e.target.value)}
                           className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium h-32 resize-none transition-colors border-none leading-relaxed"
-                          placeholder="Add notes..."
+                          placeholder="Agenda, pre-reads, attendee expectations..."
                         />
                       </div>
                     </div>
@@ -530,7 +530,7 @@ export default function Home() {
         </div>
 
         {/* Right Column: Weekly Calendar Grid */}
-        <div className="w-full bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/50 xl:sticky xl:top-12 h-[600px] xl:h-[800px] order-first xl:order-last mb-12 xl:mb-0 flex flex-col">
+        <div className="w-full bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/50 xl:sticky xl:top-12 xl:h-[800px] flex flex-col mb-12 xl:mb-0">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-semibold tracking-tight">Upcoming Schedule</h3>
             <button 
@@ -548,32 +548,71 @@ export default function Home() {
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-zinc-300 border-t-zinc-800"></div>
             </div>
           ) : (
-            <div className="flex-1 min-h-0">
-              <Calendar
-                localizer={localizer}
-                events={calendarEvents}
-                startAccessor="start"
-                endAccessor="end"
-                view={calendarView}
-                onView={(v) => setCalendarView(v as 'week'|'day')}
-                views={['week', 'day']}
-                date={calendarDate}
-                onNavigate={(newDate) => {
-                  setCalendarDate(newDate);
-                  fetchCalendar(newDate);
-                }}
-                min={new Date(2025, 1, 1, 7, 0, 0)} // Starts at 7 AM
-                max={new Date(2025, 1, 1, 23, 0, 0)} // Ends at 11 PM
-                scrollToTime={new Date(2025, 1, 1, 8, 0, 0)} // Auto-scrolls to 8 AM on load
-                eventPropGetter={eventStyleGetter}
-                onSelectEvent={(event) => {
-                  if (event.resource.htmlLink) {
-                    window.open(event.resource.htmlLink, '_blank');
-                  }
-                }}
-                style={{ height: '100%', fontFamily: 'inherit' }}
-              />
-            </div>
+            <>
+              {/* Mobile: Clean Agenda List */}
+              <div className="xl:hidden flex-1 overflow-y-auto space-y-2 pb-4">
+                {calendarEvents.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-40 text-zinc-400 text-sm font-medium">
+                    <CalendarPlus className="w-10 h-10 mb-3 text-zinc-200" />
+                    No upcoming events
+                  </div>
+                ) : (
+                  calendarEvents.map((ev, i) => {
+                    const start = new Date(ev.start);
+                    const end = new Date(ev.end);
+                    return (
+                      <a
+                        key={i}
+                        href={ev.resource?.htmlLink || '#'}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-start gap-4 p-4 rounded-2xl hover:bg-zinc-50 transition-colors group"
+                      >
+                        <div className="w-1 self-stretch rounded-full bg-blue-500 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-zinc-900 truncate group-hover:text-blue-600 transition-colors">{ev.title}</p>
+                          <p className="text-sm text-zinc-500 mt-0.5">
+                            {start.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
+                            {' · '}
+                            {start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                            {' – '}
+                            {end.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                          </p>
+                        </div>
+                      </a>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Desktop: Full Week Grid */}
+              <div className="hidden xl:flex flex-1 min-h-0">
+                <Calendar
+                  localizer={localizer}
+                  events={calendarEvents}
+                  startAccessor="start"
+                  endAccessor="end"
+                  view={calendarView}
+                  onView={(v) => setCalendarView(v as 'week'|'day')}
+                  views={['week', 'day']}
+                  date={calendarDate}
+                  onNavigate={(newDate) => {
+                    setCalendarDate(newDate);
+                    fetchCalendar(newDate);
+                  }}
+                  min={new Date(2025, 1, 1, 7, 0, 0)}
+                  max={new Date(2025, 1, 1, 23, 0, 0)}
+                  scrollToTime={new Date(2025, 1, 1, 8, 0, 0)}
+                  eventPropGetter={eventStyleGetter}
+                  onSelectEvent={(event) => {
+                    if (event.resource.htmlLink) {
+                      window.open(event.resource.htmlLink, '_blank');
+                    }
+                  }}
+                  style={{ height: '100%', width: '100%', fontFamily: 'inherit' }}
+                />
+              </div>
+            </>
           )}
         </div>
       </main>
