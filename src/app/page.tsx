@@ -151,19 +151,19 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         
         {/* Header */}
-        <div className="flex justify-between items-center mb-10">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-5 sm:gap-0 mb-10">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
             <span className="text-4xl">📅</span>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Calendar AI</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight whitespace-nowrap">Calendar AI</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <span className="text-sm font-medium text-slate-600">{session?.user?.email}</span>
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-full shadow-sm border border-slate-200 max-w-full">
+              <div className="w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
+              <span className="text-xs sm:text-sm font-medium text-slate-600 truncate max-w-[150px] sm:max-w-[200px]">{session?.user?.email}</span>
             </div>
             <button
               onClick={() => signOut()}
-              className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 hover:bg-slate-50"
+              className="text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 hover:bg-slate-50 shrink-0"
             >
               Sign Out
             </button>
