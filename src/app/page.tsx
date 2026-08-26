@@ -395,6 +395,9 @@ export default function Home() {
                 endAccessor="end"
                 defaultView="week"
                 views={['week', 'day']}
+                min={new Date(2025, 1, 1, 7, 0, 0)} // Starts at 7 AM
+                max={new Date(2025, 1, 1, 23, 0, 0)} // Ends at 11 PM
+                scrollToTime={new Date(2025, 1, 1, 8, 0, 0)} // Auto-scrolls to 8 AM on load
                 eventPropGetter={eventStyleGetter}
                 onSelectEvent={(event) => {
                   if (event.resource.htmlLink) {
