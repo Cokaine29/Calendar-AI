@@ -175,7 +175,7 @@ export default function Home() {
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-8">What needs scheduling?</h2>
           <div className="relative group">
             <textarea
-              className="w-full h-64 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus:shadow-[0_8px_40px_rgb(0,0,0,0.08)] outline-none transition-shadow duration-500 text-zinc-800 resize-none font-medium text-lg placeholder:text-zinc-400 border-none leading-relaxed"
+              className="w-full h-64 p-8 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus:shadow-[0_8px_40px_rgb(0,0,0,0.08)] outline-none transition-shadow duration-500 text-zinc-800 resize-none font-medium text-lg placeholder:text-zinc-400 border border-zinc-200 leading-relaxed"
               placeholder="Paste any unstructured text, email, or meeting notes here..."
               value={emailText}
               onChange={(e) => setEmailText(e.target.value)}
@@ -223,7 +223,7 @@ export default function Home() {
             
             <div className="space-y-8">
               {events.map((ev, i) => (
-                <div key={i} className="p-8 sm:p-10 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative">
+                <div key={i} className="p-8 sm:p-10 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative border border-zinc-100">
                   
                   <div className="flex justify-between items-start mb-8">
                     <input
@@ -246,7 +246,7 @@ export default function Home() {
                   
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-zinc-400 mb-2">Location</label>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">Location / Meeting Link</label>
                       <input
                         type="text"
                         value={ev.location || ""}
