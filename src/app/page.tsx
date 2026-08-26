@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function Home() {
@@ -11,6 +11,15 @@ export default function Home() {
   const [loadingSchedule, setLoadingSchedule] = useState(false);
   const [message, setMessage] = useState("");
   const [scheduledLinks, setScheduledLinks] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+    }
+  }, []);
 
   if (status === "loading") {
     return (
