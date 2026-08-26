@@ -122,7 +122,7 @@ export default function Home() {
     setLoadingSchedule(false);
   };
 
-  const updateEvent = (index: number, field: string, value: string) => {
+  const updateEvent = (index: number, field: string, value: any) => {
     const updated = [...events];
     updated[index][field] = value;
     setEvents(updated);
