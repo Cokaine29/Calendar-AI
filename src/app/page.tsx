@@ -141,6 +141,11 @@ export default function Home() {
     return localString;
   };
 
+  const removeEvent = (index: number) => {
+    const updated = events.filter((_, i) => i !== index);
+    setEvents(updated);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -205,11 +210,22 @@ export default function Home() {
             <div className="space-y-6">
               {events.map((ev, i) => (
                 <div key={i} className="p-6 bg-slate-50 border border-slate-200 rounded-xl relative group hover:border-indigo-300 transition-colors">
-                  <div className="absolute top-0 right-0 bg-indigo-100 text-indigo-700 px-3 py-1 rounded-bl-lg rounded-tr-xl text-xs font-bold uppercase tracking-wider">
-                    Event {i + 1}
+                  <div className="absolute top-0 right-0 flex items-center">
+                    <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-bl-lg rounded-tr-xl text-xs font-bold uppercase tracking-wider border-b border-l border-indigo-200">
+                      Event {i + 1}
+                    </div>
+                    <button 
+                      onClick={() => removeEvent(i)}
+                      className="ml-2 mr-2 text-slate-400 hover:text-red-500 transition-colors"
+                      title="Remove Event"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Event Title</label>
                       <input
