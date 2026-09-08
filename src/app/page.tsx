@@ -595,7 +595,7 @@ export default function Home() {
                             type="datetime-local"
                             value={formatForInput(ev.start_time)}
                             onChange={(e) => updateEvent(i, "start_time", parseFromInput(e.target.value))}
-                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
+                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none [color-scheme:light]"
                           />
                         </div>
                         <div>
@@ -604,7 +604,7 @@ export default function Home() {
                             type="datetime-local"
                             value={formatForInput(ev.end_time)}
                             onChange={(e) => updateEvent(i, "end_time", parseFromInput(e.target.value))}
-                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
+                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none [color-scheme:light]"
                           />
                         </div>
                       </div>
