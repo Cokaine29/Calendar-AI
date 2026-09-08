@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { RefreshCw, Download, CalendarPlus, FileText, CheckCircle2, Share2, X, Copy, Mail, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { FaGithub, FaLinkedin, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const locales = {
   'en-US': enUS,
@@ -370,16 +372,6 @@ export default function Home() {
     }
   };
 
-  const formatForInput = (isoString?: string) => {
-    if (!isoString) return "";
-    return isoString.replace('Z', '').slice(0, 16);
-  };
-
-  const parseFromInput = (localString: string) => {
-    if (!localString) return null;
-    return localString;
-  };
-
   const removeEvent = (index: number) => {
     const updated = events.filter((_, i) => i !== index);
     setEvents(updated);
@@ -618,21 +610,29 @@ export default function Home() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="relative">
                           <label className="block text-sm font-medium text-zinc-400 mb-2">Starts</label>
-                          <input
-                            type="datetime-local"
-                            value={formatForInput(ev.start_time)}
-                            onChange={(e) => updateEvent(i, "start_time", parseFromInput(e.target.value))}
-                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none [color-scheme:light] custom-datetime"
+                          <DatePicker
+                            selected={ev.start_time ? new Date(ev.start_time) : null}
+                            onChange={(date) => updateEvent(i, "start_time", date ? date.toISOString() : null)}
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            timeIntervals={15}
+                            timeCaption="Time"
+                            dateFormat="dd-MM-yyyy HH:mm"
+                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
                           />
                           <CalendarIcon className="w-5 h-5 text-zinc-400 absolute right-4 bottom-4 pointer-events-none" />
                         </div>
                         <div className="relative">
                           <label className="block text-sm font-medium text-zinc-400 mb-2">Ends</label>
-                          <input
-                            type="datetime-local"
-                            value={formatForInput(ev.end_time)}
-                            onChange={(e) => updateEvent(i, "end_time", parseFromInput(e.target.value))}
-                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none [color-scheme:light] custom-datetime"
+                          <DatePicker
+                            selected={ev.end_time ? new Date(ev.end_time) : null}
+                            onChange={(date) => updateEvent(i, "end_time", date ? date.toISOString() : null)}
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            timeIntervals={15}
+                            timeCaption="Time"
+                            dateFormat="dd-MM-yyyy HH:mm"
+                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none"
                           />
                           <CalendarIcon className="w-5 h-5 text-zinc-400 absolute right-4 bottom-4 pointer-events-none" />
                         </div>
@@ -788,6 +788,30 @@ export default function Home() {
           cursor: pointer;
           width: 24px;
           height: 24px;
+        }
+        .react-datepicker {
+          font-family: inherit !important;
+          border: 1px solid #e4e4e7 !important;
+          border-radius: 1rem !important;
+          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01) !important;
+        }
+        .react-datepicker__header {
+          background-color: #ffffff !important;
+          border-bottom: 1px solid #f4f4f5 !important;
+          border-top-left-radius: 1rem !important;
+          border-top-right-radius: 1rem !important;
+          padding-top: 12px !important;
+        }
+        .react-datepicker__day--selected, .react-datepicker__day--keyboard-selected, .react-datepicker__time-list-item--selected {
+          background-color: #3b82f6 !important;
+          color: white !important;
+          border-radius: 0.5rem !important;
+        }
+        .react-datepicker__day:hover {
+          border-radius: 0.5rem !important;
+        }
+        .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::before, .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::after {
+          display: none !important;
         }
       `}} />
     </div>
