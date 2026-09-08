@@ -6,7 +6,7 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import { toast } from "sonner";
-import { RefreshCw, Download, CalendarPlus, FileText, CheckCircle2, Share2, X, Copy, Mail } from "lucide-react";
+import { RefreshCw, Download, CalendarPlus, FileText, CheckCircle2, Share2, X, Copy, Mail, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { FaGithub, FaLinkedin, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
@@ -41,6 +41,33 @@ const Footer = () => (
     </div>
   </footer>
 );
+
+const CustomToolbar = (toolbar: any) => {
+  const goToBack = () => {
+    toolbar.onNavigate('PREV');
+  };
+  const goToNext = () => {
+    toolbar.onNavigate('NEXT');
+  };
+  const goToCurrent = () => {
+    toolbar.onNavigate('TODAY');
+  };
+  return (
+    <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <div className="flex items-center gap-1 bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50">
+        <button onClick={goToCurrent} className="px-4 py-1.5 text-sm font-semibold text-zinc-700 hover:text-zinc-900 hover:bg-white rounded-lg transition-all shadow-sm">Today</button>
+        <div className="w-[1px] h-4 bg-zinc-200 mx-1"></div>
+        <button onClick={goToBack} className="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-lg transition-all shadow-sm"><ChevronLeft className="w-4 h-4"/></button>
+        <button onClick={goToNext} className="p-1.5 text-zinc-500 hover:text-zinc-900 hover:bg-white rounded-lg transition-all shadow-sm"><ChevronRight className="w-4 h-4"/></button>
+      </div>
+      <h2 className="text-lg font-bold text-zinc-900 tracking-tight">{toolbar.label}</h2>
+      <div className="flex items-center gap-1 bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50">
+        <button onClick={() => toolbar.onView('week')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${toolbar.view === 'week' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}>Week</button>
+        <button onClick={() => toolbar.onView('day')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${toolbar.view === 'day' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}>Day</button>
+      </div>
+    </div>
+  );
+};
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -589,23 +616,25 @@ export default function Home() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
+                        <div className="relative">
                           <label className="block text-sm font-medium text-zinc-400 mb-2">Starts</label>
                           <input
                             type="datetime-local"
                             value={formatForInput(ev.start_time)}
                             onChange={(e) => updateEvent(i, "start_time", parseFromInput(e.target.value))}
-                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none [color-scheme:light]"
+                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none [color-scheme:light] custom-datetime"
                           />
+                          <CalendarIcon className="w-5 h-5 text-zinc-400 absolute right-4 bottom-4 pointer-events-none" />
                         </div>
-                        <div>
+                        <div className="relative">
                           <label className="block text-sm font-medium text-zinc-400 mb-2">Ends</label>
                           <input
                             type="datetime-local"
                             value={formatForInput(ev.end_time)}
                             onChange={(e) => updateEvent(i, "end_time", parseFromInput(e.target.value))}
-                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none [color-scheme:light]"
+                            className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:bg-zinc-100 text-zinc-800 font-medium transition-colors border-none [color-scheme:light] custom-datetime"
                           />
+                          <CalendarIcon className="w-5 h-5 text-zinc-400 absolute right-4 bottom-4 pointer-events-none" />
                         </div>
                       </div>
 
@@ -680,6 +709,7 @@ export default function Home() {
                 max={new Date(2025, 1, 1, 23, 59, 59)} // Ends at Midnight
                 scrollToTime={new Date(2025, 1, 1, 8, 0, 0)} // Auto-scrolls to 8 AM on load
                 eventPropGetter={eventStyleGetter}
+                components={{ toolbar: CustomToolbar }}
                 onSelectEvent={(event) => {
                   if (event.resource.htmlLink) {
                     window.open(event.resource.htmlLink, '_blank');
@@ -753,30 +783,11 @@ export default function Home() {
           border-radius: 50%;
           background-color: #ef4444;
         }
-        .rbc-btn-group button {
-          border: 1px solid #e4e4e7;
-          color: #52525b;
-          background: white;
-          font-weight: 500;
-          padding: 6px 12px;
-        }
-        .rbc-btn-group button.rbc-active {
-          background: #f4f4f5;
-          box-shadow: none;
-        }
-        .rbc-btn-group button:hover {
-          background: #fafafa;
-        }
-        .rbc-toolbar button:active, .rbc-toolbar button.rbc-active:active, .rbc-toolbar button.rbc-active:hover, .rbc-toolbar button.rbc-active:focus {
-          background-color: #f4f4f5;
-          box-shadow: none;
-        }
-        .rbc-toolbar {
-          margin-bottom: 16px;
-        }
-        .rbc-toolbar-label {
-          font-weight: 600;
-          font-size: 16px;
+        .custom-datetime::-webkit-calendar-picker-indicator {
+          opacity: 0;
+          cursor: pointer;
+          width: 24px;
+          height: 24px;
         }
       `}} />
     </div>
