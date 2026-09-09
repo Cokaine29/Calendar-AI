@@ -612,7 +612,7 @@ export default function Home() {
                           <label className="block text-sm font-medium text-zinc-400 mb-2">Starts</label>
                           <DatePicker
                             selected={ev.start_time ? new Date(ev.start_time) : null}
-                            onChange={(date) => updateEvent(i, "start_time", date ? date.toISOString() : null)}
+                            onChange={(date: Date | null) => updateEvent(i, "start_time", date ? date.toISOString() : null)}
                             showTimeSelect
                             timeFormat="HH:mm"
                             timeIntervals={15}
@@ -626,7 +626,7 @@ export default function Home() {
                           <label className="block text-sm font-medium text-zinc-400 mb-2">Ends</label>
                           <DatePicker
                             selected={ev.end_time ? new Date(ev.end_time) : null}
-                            onChange={(date) => updateEvent(i, "end_time", date ? date.toISOString() : null)}
+                            onChange={(date: Date | null) => updateEvent(i, "end_time", date ? date.toISOString() : null)}
                             showTimeSelect
                             timeFormat="HH:mm"
                             timeIntervals={15}
